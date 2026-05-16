@@ -19,7 +19,7 @@ async def refresh_session(refresh_token: str = Header(...)):
         return {
             "access_token": create_access_token(user_id),
             "refresh_token": create_refresh_token(user_id),
-            "token_type": "bearer"
+            "token_type": "bearer"  # nosec B105
         }
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token.")

@@ -31,13 +31,3 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-# Input schema for Registration
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
-# Input schema for Login
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str

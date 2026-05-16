@@ -60,7 +60,7 @@ jobs:
       # 3. Static Security Audits: Scan for hardcoded credentials & weak crypto 
       - name: Run Static Security Audit (Bandit)
         run: |
-          bandit -r app/ -c "bandit.yaml" --skip B104
+          bandit -r app/ --skip B104
 
       # 4. Asynchronous Suites: Execute full integration tests 
       - name: Run End-to-End Test Sequence

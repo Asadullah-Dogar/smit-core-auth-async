@@ -1,5 +1,12 @@
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.config import settings
+
+
+class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy 2.0 models."""
+    pass
+
 
 # Create the async engine without blocking sync drivers
 engine = create_async_engine(

@@ -15,7 +15,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.config import settings
 from app.database import engine
-from app.redis import redis_client
+from app import redis as app_redis
+from app.routers.auth import router as auth_router
+from app.routers.tokens import router as tokens_router
+from app.routers.user import router as users_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,7 +33,26 @@ async def lifespan(app: FastAPI):
     # The DB engine is already created, but we can verify connectivity here if needed
     
     logger.info("Connecting to Redis fast memory layer...")
-    await redis_client.ping()
+    # Try to use the configured Redis; on localhost failures fall back to fakeredis for local dev
+    try:
+        await app_redis.redis_client.ping()
+    except Exception as e:
+        # only fallback for local dev hosts
+        url = settings.REDIS_URL or ""
+        if "localhost" in url or "127.0.0.1" in url:
+            logger.warning("Redis unavailable at %s, falling back to fakeredis: %s", url, e)
+            try:
+                import fakeredis.aioredis as fakeredis_aioredis
+
+                fake = fakeredis_aioredis.FakeRedis()
+                app_redis.redis_client = fake
+                # verify fake client
+                await app_redis.redis_client.ping()
+            except Exception as fe:
+                logger.exception("Failed to initialize fakeredis fallback: %s", fe)
+                raise
+        else:
+            raise
     
     yield  # Application is running and serving requests
     
@@ -39,7 +61,10 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
     
     logger.info("Closing Redis connection pool...")
-    await redis_client.aclose()
+    try:
+        await app_redis.redis_client.aclose()
+    except Exception:
+        logger.exception("Error while closing Redis connection pool")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -47,6 +72,11 @@ app = FastAPI(
     version=settings.VERSION,
     lifespan=lifespan
 )
+
+# Include the routers
+app.include_router(auth_router)
+app.include_router(tokens_router)
+app.include_router(users_router)
 
 @app.get("/health")
 async def health_check():

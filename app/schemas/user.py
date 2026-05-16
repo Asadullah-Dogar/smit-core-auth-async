@@ -21,3 +21,23 @@ class TokenExchangeResponse(BaseModel):
 # 3. Standard Operational Message Schema
 class StandardActionResponse(BaseModel):
     detail: str
+
+# Input schema for Registration
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+# Input schema for Login
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+# Input schema for Registration
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+# Input schema for Login
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
